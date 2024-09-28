@@ -17,8 +17,6 @@ namespace XO_Game
     public partial class Form1 : Form
     {
 
-        enPlayer[,] PArr = new enPlayer[3, 3];
-
         PictureBox[,] PicArr;
 
         enPlayer Turn = enPlayer.None;
@@ -33,21 +31,10 @@ namespace XO_Game
         {
             InitializeComponent();
 
-            PicArr = new PictureBox[,] 
+            PicArr = new PictureBox[,]
                 { { pb1, pb2, pb3 },
                 { pb4, pb5, pb6 },
                 { pb7, pb8, pb9 } };
-
-        }
-
-        void reset_PArr()
-        {
-
-            for (int i = 0; i < PArr.GetLength(0); i++)
-            {
-                for (int j = 0; j < PArr.GetLength(1); j++)
-                    PArr[i, j] = enPlayer.None;
-            }
 
         }
 
@@ -58,6 +45,7 @@ namespace XO_Game
             {
                 pictureBox.Image = Resources.question_mark_96;
                 pictureBox.Enabled = true;
+                pictureBox.Tag = "?";
                 pictureBox.BackColor = Color.Transparent;
             }
 
@@ -89,8 +77,6 @@ namespace XO_Game
         void reset_to_deffault()
         {
 
-            reset_PArr();
-
             reset_pictures();
 
             Turn = enPlayer.P1;
@@ -103,92 +89,99 @@ namespace XO_Game
 
         }
 
-        enPlayer check_row_winner()
+        bool check_values(PictureBox P1, PictureBox P2, PictureBox P3)
+        {
+            return (P1.Tag.ToString() != "?" &&
+                    P1.Tag.ToString() == P2.Tag.ToString() &&
+                    P2.Tag.ToString() == P3.Tag.ToString());
+        }
+
+        void set_color(PictureBox P1, PictureBox P2, PictureBox P3)
+        {
+            P1.BackColor = Color.Lime;
+            P2.BackColor = Color.Lime;
+            P3.BackColor = Color.Lime;
+        }
+
+        enPlayer get_winner(PictureBox P)
         {
 
-            enPlayer Winner = enPlayer.None;
+            if (P.Tag.ToString() == "?")
+                return enPlayer.None;
+            else if (P.Tag.ToString() == "P1")
+                return enPlayer.P1;
+            else
+                return enPlayer.P2;
 
-            int Index = 0;
+        }
 
-            for (int Row = 0; (Row < PArr.GetLength(0)) && (Winner == enPlayer.None); ++Row)
+        enPlayer check_row_winner()
+        {
+            // Top Row
+            if (check_values(pb1, pb2, pb3))
             {
-                Index = Row;
-                for (int Column = 0; Column < PArr.GetLength(1); ++Column)
-                {
-                    if (PArr[Row, Column] != PArr[Row, Row])
-                    {
-                        Winner = enPlayer.None;
-                        break;
-                    }
-                    else
-                        Winner = PArr[Row, Row];
-                }
+                set_color(pb1, pb2, pb3);
+                return get_winner(pb1);
+            }
+            // Middle Row
+            if (check_values(pb4, pb5, pb6))
+            {
+                set_color(pb4, pb5, pb6);
+                return get_winner(pb4);
+            }
+            // Bottom Row
+            if (check_values(pb7, pb8, pb9))
+            {
+                set_color(pb7, pb8, pb9);
+                return get_winner(pb7);
             }
 
-            if (Winner != enPlayer.None)
-            {
-                for (int Column = 0; Column < PicArr.GetLength(1); ++Column)
-                    PicArr[Index, Column].BackColor = Color.Lime;
-            }
-
-            return Winner;
+            return enPlayer.None;
 
         }
 
         enPlayer check_column_winner()
         {
-
-            enPlayer Winner = enPlayer.None;
-
-            int Index = 0;
-
-            for (int Column = 0; (Column < PArr.GetLength(1)) && (Winner == enPlayer.None); ++Column)
+            // Top Column
+            if (check_values(pb1, pb4, pb7))
             {
-                Index = Column;
-                for (int Row = 0; Row < PArr.GetLength(0); ++Row)
-                {
-                    if (PArr[Row, Column] != PArr[Column, Column])
-                    {
-                        Winner = enPlayer.None;
-                        break;
-                    }
-                    else
-                        Winner = PArr[Column, Column];
-                }
+                set_color(pb1, pb4, pb7);
+                return get_winner(pb1);
+            }
+            // Middle Column
+            if (check_values(pb2, pb5, pb8))
+            {
+                set_color(pb2, pb5, pb8);
+                return get_winner(pb2);
+            }
+            // Bottom Column
+            if (check_values(pb3, pb6, pb9))
+            {
+                set_color(pb3, pb6, pb9);
+                return get_winner(pb3);
             }
 
-            if (Winner != enPlayer.None)
-            {
-                for (int Row = 0; Row < PicArr.GetLength(0); ++Row)
-                    PicArr[Row, Index].BackColor = Color.Lime;
-            }
-
-            return Winner;
+            return enPlayer.None;
 
         }
 
         enPlayer check_diagonal_winner()
         {
-
-            enPlayer Winner = enPlayer.None;
-
-            if (PArr[0, 0] == PArr[1, 1] && PArr[1, 1] == PArr[2, 2] && PArr[1, 1] != enPlayer.None)
+            // top left to bottom right diagonal
+            if (check_values(pb1, pb5, pb9))
             {
-                Winner = PArr[1, 1];
-                PicArr[0, 0].BackColor = Color.Lime;
-                PicArr[1, 1].BackColor = Color.Lime;
-                PicArr[2, 2].BackColor = Color.Lime;
+                set_color(pb1, pb5, pb9);
+                return get_winner(pb1);
             }
-            else if (PArr[0, 2] == PArr[1, 1] && PArr[1, 1] == PArr[2, 0] && PArr[1, 1] != enPlayer.None)
+            // top right to bottom left diagonal
+            if (check_values(pb3, pb5, pb7))
             {
-                Winner = PArr[1, 1];
-                PicArr[0, 2].BackColor = Color.Lime;
-                PicArr[1, 1].BackColor = Color.Lime;
-                PicArr[2, 0].BackColor = Color.Lime;
+                set_color(pb3, pb5, pb7);
+                return get_winner(pb3);
             }
 
-            return Winner;
-            
+            return enPlayer.None;
+
         }
 
         enPlayer check_winner()
@@ -216,7 +209,7 @@ namespace XO_Game
             if (Winner == enPlayer.None)
                 return;
 
-            foreach(PictureBox pictureBox in PicArr)
+            foreach (PictureBox pictureBox in PicArr)
                 pictureBox.Enabled = false;
 
             if (Winner == enPlayer.P1)
@@ -241,17 +234,21 @@ namespace XO_Game
             MessageBox.Show("Draw!", "Game Over", MessageBoxButtons.OK, MessageBoxIcon.Stop);
         }
 
-        void set_turn(PictureBox pictureBox, int row_index, int column_index)
+        void set_turn(PictureBox pictureBox)
         {
 
             ++Rounds;
 
             if (Turn == enPlayer.P1)
+            {
                 pictureBox.Image = Resources.X;
+                pictureBox.Tag = "P1";
+            }
             else
+            {
                 pictureBox.Image = Resources.O;
-
-            PArr[row_index, column_index] = Turn;
+                pictureBox.Tag = "P2";
+            }
 
             pictureBox.Enabled = false;
 
@@ -289,11 +286,6 @@ namespace XO_Game
 
         }
 
-        private void sataButton1_Click(object sender, EventArgs e)
-        {
-            
-        }
-
         private void guna2GradientButton1_Click(object sender, EventArgs e)
         {
             reset_to_deffault();
@@ -301,65 +293,47 @@ namespace XO_Game
 
         private void pictureBox1_Click(object sender, EventArgs e)
         {
-            set_turn((PictureBox)sender,
-                ((PictureBox)sender).Tag.ToString()[0] - '0',
-                ((PictureBox)sender).Tag.ToString()[1] - '0');
+            set_turn((PictureBox)sender);
         }
 
         private void pb2_Click(object sender, EventArgs e)
         {
-            set_turn((PictureBox)sender,
-                ((PictureBox)sender).Tag.ToString()[0] - '0',
-                ((PictureBox)sender).Tag.ToString()[1] - '0');
+            set_turn((PictureBox)sender);
         }
 
         private void pb3_Click(object sender, EventArgs e)
         {
-            set_turn((PictureBox)sender,
-                ((PictureBox)sender).Tag.ToString()[0] - '0',
-                ((PictureBox)sender).Tag.ToString()[1] - '0');
+            set_turn((PictureBox)sender);
         }
 
         private void pb4_Click(object sender, EventArgs e)
         {
-            set_turn((PictureBox)sender,
-                ((PictureBox)sender).Tag.ToString()[0] - '0',
-                ((PictureBox)sender).Tag.ToString()[1] - '0');
+            set_turn((PictureBox)sender);
         }
 
         private void pb5_Click(object sender, EventArgs e)
         {
-            set_turn((PictureBox)sender,
-                ((PictureBox)sender).Tag.ToString()[0] - '0',
-                ((PictureBox)sender).Tag.ToString()[1] - '0');
+            set_turn((PictureBox)sender);
         }
 
         private void pb6_Click(object sender, EventArgs e)
         {
-            set_turn((PictureBox)sender,
-                ((PictureBox)sender).Tag.ToString()[0] - '0',
-                ((PictureBox)sender).Tag.ToString()[1] - '0');
+            set_turn((PictureBox)sender);
         }
 
         private void pb7_Click(object sender, EventArgs e)
         {
-            set_turn((PictureBox)sender,
-                ((PictureBox)sender).Tag.ToString()[0] - '0',
-                ((PictureBox)sender).Tag.ToString()[1] - '0');
+            set_turn((PictureBox)sender);
         }
 
         private void pb8_Click(object sender, EventArgs e)
         {
-            set_turn((PictureBox)sender,
-                ((PictureBox)sender).Tag.ToString()[0] - '0',
-                ((PictureBox)sender).Tag.ToString()[1] - '0');
+            set_turn((PictureBox)sender);
         }
 
         private void pb9_Click(object sender, EventArgs e)
         {
-            set_turn((PictureBox)sender,
-                ((PictureBox)sender).Tag.ToString()[0] - '0',
-                ((PictureBox)sender).Tag.ToString()[1] - '0');
+            set_turn((PictureBox)sender);
         }
 
         private void Form1_Load(object sender, EventArgs e)
